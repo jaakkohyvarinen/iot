@@ -49,4 +49,8 @@ public class SharedIRSensor extends Thread {
 		return this.distance;
 	}
 	
+	public int getIRControlValue(){
+		return this.control;
+	}
+	
 }
