@@ -1,7 +1,6 @@
 package com.accenture.iot.lego;
 
 import lejos.hardware.lcd.LCD;
-import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.navigation.Move;
 import lejos.robotics.navigation.MoveListener;
 import lejos.robotics.navigation.MoveProvider;
