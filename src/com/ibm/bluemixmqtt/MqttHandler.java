@@ -24,13 +24,18 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 
+import com.accenture.iot.lego.BehaviorBluemix;
+
 public class MqttHandler implements MqttCallback {
 	private final static String DEFAULT_TCP_PORT = "1883";
 	private final static String DEFAULT_SSL_PORT = "8883";
+	
+	private BehaviorBluemix behavior;
 
 	private MqttClient client = null;
 
-	public MqttHandler() {
+	public MqttHandler(BehaviorBluemix behavior) {
+		this.behavior = behavior;
 
 	}
 
@@ -53,21 +58,19 @@ public class MqttHandler implements MqttCallback {
 	 * Received one subscribed message
 	 */
 	@Override
-	public void messageArrived(String topic, MqttMessage mqttMessage)
-			throws Exception {
+	public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
 		String payload = new String(mqttMessage.getPayload());
-		System.out.println(".messageArrived - Message received on topic "
-				+ topic + ": message is " + payload);
+		System.out.println(".messageArrived - Message received on topic " + topic + ": message is " + payload);
+		behavior.dothejob(payload);
 	}
 
-	public void connect(String serverHost, String clientId, String authmethod,
-			String authtoken, boolean isSSL) {
+	public void connect(String serverHost, String clientId, String authmethod, String authtoken, boolean isSSL) {
 		// check if client is already connected
 		if (!isMqttConnected()) {
 			String connectionUri = null;
-			
-			//tcp://<org-id>.messaging.internetofthings.ibmcloud.com:1883
-			//ssl://<org-id>.messaging.internetofthings.ibmcloud.com:8883
+
+			// tcp://<org-id>.messaging.internetofthings.ibmcloud.com:1883
+			// ssl://<org-id>.messaging.internetofthings.ibmcloud.com:8883
 			if (isSSL) {
 				connectionUri = "ssl://" + serverHost + ":" + DEFAULT_SSL_PORT;
 			} else {
@@ -98,7 +101,7 @@ public class MqttHandler implements MqttCallback {
 			options.setUserName(authmethod);
 			options.setPassword(authtoken.toCharArray());
 
-			//If SSL is used, do not forget to use TLSv1.2
+			// If SSL is used, do not forget to use TLSv1.2
 			if (isSSL) {
 				java.util.Properties sslClientProps = new java.util.Properties();
 				sslClientProps.setProperty("com.ibm.ssl.protocol", "TLSv1.2");

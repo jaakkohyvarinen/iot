@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="EV3FirstProgram" basedir="." default="copy">
+<project name="IOT" basedir="." default="copy">
     <property name="source.dir"     value="src"/>
     <property name="lib.dir"        value="lib"/>
     <property name="class.dir"      value="build"/>
     <property name="jar.dir"        value="dist"/>
-    <property name="main-class"     value="EV3FirstProgram"/>
+    <property name="main-class"     value="com.accenture.iot.lego.BehaviorMain"/>
     <property name="lejos.home"     value="/home/root/lejos"/>
     <property name="ev3.host"       value="10.0.1.1"/>
 
@@ -31,8 +31,7 @@
         <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${class.dir}">
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
-                <attribute name="Class-Path" value="/home/root/lejos/lib/ev3classes.jar /home/root/lejos/lib/d
-                	 busjava.jar /home/root/lejos/libjna/usr/share/java/jna.jar"/>
+                <attribute name="Class-Path" value="/home/root/lejos/lib/ev3classes.jar /home/lejos/programs/org.eclipse.paho.client.mqttv3.jar /home/lejos/programs/json4j-apache-1.1.0.jar /home/root/lejos/lib/dbusjava.jar /home/root/lejos/libjna/usr/share/java/jna.jar"/>
             </manifest>
         </jar>  
     </target>
