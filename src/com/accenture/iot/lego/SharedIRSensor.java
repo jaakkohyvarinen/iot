@@ -29,18 +29,18 @@ public class SharedIRSensor extends Thread {
 		initAndStart();
 	}
 
-	public void run () {
+	public void run() {
 		while (true) {
-			float [] sample = new float[sp.sampleSize()];
+			float[] sample = new float[sp.sampleSize()];
 			control = ir.getRemoteCommand(0);
 			sp.fetchSample(sample, 0);
-			if (sample [0] < 1){
+			if (sample[0] < 1) {
 				this.distance = 255;
 			} else {
-				this.distance = (int) sample [0];
+				this.distance = (int) sample[0];
 			}
-			LCD.drawString("Control: " + control, 0,0);
-			LCD.drawString("Distance: " + distance + " ",  0, 1);
+			// LCD.drawString("Control: " + control, 0,0);
+			// LCD.drawString("Distance: " + distance + " ", 0, 1);
 			Thread.yield();
 		}
 	}
@@ -48,9 +48,9 @@ public class SharedIRSensor extends Thread {
 	public int getDistance() {
 		return this.distance;
 	}
-	
-	public int getIRControlValue(){
+
+	public int getIRControlValue() {
 		return this.control;
 	}
-	
+
 }

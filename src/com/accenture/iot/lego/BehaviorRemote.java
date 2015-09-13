@@ -18,6 +18,7 @@ public class BehaviorRemote implements Behavior {
 	@Override
 	public boolean takeControl() {
 		return (ir.getIRControlValue() != 0);
+		
 	}
 
 	@Override
@@ -26,29 +27,36 @@ public class BehaviorRemote implements Behavior {
 		while (manualcontrol) {
 			int current = ir.getIRControlValue();
 			if (prev == current) {
-				return;
+				continue;
 			}
+			pilot.stop();
+			prev = current;
 			switch (current) {
+			case 0:
+				pilot.stop();
+				manualcontrol = false;
+				break;
 			case 1:
 				pilot.rotateLeft();
-				break;
+				continue;
 			case 2:
 				pilot.rotateRight();
-				break;
+				continue;
 			case 3:
 				pilot.forward();
-				break;
+				continue;
 			case 4:
 				pilot.backward();
-				break;
+				continue;
 			}
-			prev = current;
+			
 		}
 	}
 
 	@Override
 	public void suppress() {
 		manualcontrol = false;
+		prev = 0;
 	}
 
 }
