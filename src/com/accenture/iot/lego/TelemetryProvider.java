@@ -25,13 +25,12 @@ public class TelemetryProvider implements MoveListener {
 
 	@Override
 	public void moveStopped(Move event, MoveProvider mp) {
-		LCD.drawString("Angle: " + event.getAngleTurned(), 0, 0);
-		LCD.drawString("Distance: " + event.getDistanceTraveled(), 0, 1);
-		LCD.drawString("Speed: " + event.getTravelSpeed(), 0, 2);
-		LCD.drawString("Type: " + event.getMoveType(), 0, 3);
+//		LCD.drawString("Angle: " + event.getAngleTurned(), 0, 0);
+//		LCD.drawString("Distance: " + event.getDistanceTraveled(), 0, 1);
+//		LCD.drawString("Speed: " + event.getTravelSpeed(), 0, 2);
+//		LCD.drawString("Type: " + event.getMoveType(), 0, 3);
 		// Format the Json String
 		JSONObject move = new JSONObject();
-		JSONObject jsonObj = new JSONObject();
 		try {
 			move.put("distance", event.getDistanceTraveled());
 			move.put("angle", event.getAngleTurned());
@@ -42,7 +41,7 @@ public class TelemetryProvider implements MoveListener {
 		}
 		// Publish device events to the app
 		// iot-2/evt/<event-id>/fmt/<format>
-		this.handler.publish("iot-2/evt/eid/fmt/json", jsonObj.toString(), false, 0);
+		this.handler.publish("iot-2/evt/eid/fmt/json", move.toString(), false, 0);
 	}
 
 }

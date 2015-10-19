@@ -21,7 +21,7 @@
 
     <target name="compile" description="build class files" depends="clean">
         <mkdir dir="${class.dir}"/>
-        <javac srcdir="${source.dir}" destdir="${class.dir}">
+        <javac srcdir="${source.dir}" destdir="${class.dir}" debug="true">
             <classpath refid="libraries.path"/>
         </javac>
     </target>
@@ -37,7 +37,7 @@
     </target>
 
     <target name="copy" depends="jar">
-        <scp todir="root:@${ev3.host}:/home/lejos/programs/" trust="true">
+        <scp todir="root:@192.168.137.94:/home/lejos/programs" trust="true">
             <fileset file="${jar.dir}/${ant.project.name}.jar"/>
         </scp>
     </target>
