@@ -3,12 +3,12 @@ package com.accenture.iot.lego;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.subsumption.Behavior;
 
-public class BehaviorBluemix implements Behavior {
+public class BehaviorAWS implements Behavior {
 
 	private String payload = null;
 	private DifferentialPilot pilot;
 	
-	public BehaviorBluemix (DifferentialPilot pilot) {
+	public BehaviorAWS (DifferentialPilot pilot) {
 		this.pilot = pilot;
 	}
 	

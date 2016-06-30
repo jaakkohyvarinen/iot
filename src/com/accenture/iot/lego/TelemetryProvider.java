@@ -3,8 +3,6 @@ package com.accenture.iot.lego;
 import org.apache.commons.json.JSONException;
 import org.apache.commons.json.JSONObject;
 
-import com.ibm.bluemixmqtt.MqttHandler;
-
 import lejos.hardware.lcd.LCD;
 import lejos.robotics.navigation.Move;
 import lejos.robotics.navigation.MoveListener;
@@ -39,9 +37,7 @@ public class TelemetryProvider implements MoveListener {
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
-		// Publish device events to the app
-		// iot-2/evt/<event-id>/fmt/<format>
-		this.handler.publish("iot-2/evt/eid/fmt/json", move.toString(), false, 0);
+		this.handler.publish("ev3/telemetry", move.toString(), false, 0);
 	}
 
 }

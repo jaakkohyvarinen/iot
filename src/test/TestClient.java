@@ -1,35 +1,34 @@
 package test;
 
+import java.util.Date;
+import java.util.Random;
+
 import org.apache.commons.json.JSONException;
 import org.apache.commons.json.JSONObject;
 
-import com.accenture.iot.lego.BehaviorBluemix;
-import com.ibm.bluemixmqtt.MqttHandler;
+import com.accenture.iot.lego.BehaviorAWS;
+import com.accenture.iot.lego.MqttHandler;
 
 public class TestClient {
 
 	public static void main(String[] args) throws InterruptedException {
-		BehaviorBluemix b4 = new BehaviorBluemix(null);
+		BehaviorAWS b4 = new BehaviorAWS(null);
 		MqttHandler handler = new MqttHandler(b4);
-		// Format: d:<orgid>:<type-id>:<device-id>
-		handler.connect("ubqgd7.messaging.internetofthings.ibmcloud.com", "d:ubqgd7:EV3:EV3_1", "use-token-auth",
-				"ZBb2Q0R59obhGS-dR+", false);
-
+		handler.connect("a3cmxw710fgyr3.iot.eu-central-1.amazonaws.com", "EV3");
+		Random randomGenerator = new Random();
 		while (true) {
 			JSONObject move = new JSONObject();
 			try {
-				move.put("distance", "123");
-				move.put("angle", "123");
-				move.put("speed", "123");
-				move.put("time", System.currentTimeMillis());
+				move.put("distance", randomGenerator.nextInt());
+				move.put("angle", randomGenerator.nextInt());
+				move.put("speed", randomGenerator.nextInt());
+				move.put("time", (new Date(System.currentTimeMillis()).toString()));
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 			}
-			// Publish device events to the app
-			// iot-2/evt/<event-id>/fmt/<format>
-			handler.publish("iot-2/evt/eid/fmt/json", move.toString(), false, 0);
-			Thread.sleep(10000);
-			System.out.println("Test");
+			handler.publish("ev3/telemetry", move.toString(), false, 0);
+			Thread.sleep(1000);
+			System.out.println("Published [" + move.toString() + "]");
 		}
 	}
 
