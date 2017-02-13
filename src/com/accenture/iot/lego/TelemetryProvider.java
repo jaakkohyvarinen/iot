@@ -37,7 +37,7 @@ public class TelemetryProvider implements MoveListener {
 		} catch (JSONException e1) {
 			e1.printStackTrace();
 		}
-		this.handler.publish("ev3/telemetry", move.toString(), false, 0);
+		this.handler.publish("r2d2/telemetry", move.toString(), false, 0);
 	}
 
 }

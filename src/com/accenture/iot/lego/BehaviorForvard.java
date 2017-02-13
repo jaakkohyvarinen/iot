@@ -1,13 +1,13 @@
 package com.accenture.iot.lego;
 
-import lejos.robotics.navigation.DifferentialPilot;
+import lejos.robotics.navigation.MovePilot;
 import lejos.robotics.subsumption.Behavior;
 
 public class BehaviorForvard implements Behavior {
 	
-	private DifferentialPilot pilot = null;
+	private MovePilot pilot = null;
 
-	public BehaviorForvard (DifferentialPilot pilot) {
+	public BehaviorForvard (MovePilot pilot) {
 		this.pilot = pilot;
 	}
 
@@ -19,7 +19,7 @@ public class BehaviorForvard implements Behavior {
 	@Override
 	public void action() {
 		if (!pilot.isMoving()){
-			pilot.forward();
+			pilot.backward();
 		}
 
 	}

@@ -1,34 +1,34 @@
 package com.accenture.iot.lego;
 
-import lejos.robotics.navigation.DifferentialPilot;
+import lejos.robotics.navigation.MovePilot;
 import lejos.robotics.subsumption.Behavior;
 
-public class BehaviorAWS implements Behavior {
+public class BehaviorAWS extends BehaviorControlBase {
 
 	private String payload = null;
-	private DifferentialPilot pilot;
-	
-	public BehaviorAWS (DifferentialPilot pilot) {
-		this.pilot = pilot;
+
+	public BehaviorAWS(MovePilot pilot) {
+		super (pilot);
 	}
-	
+
 	@Override
 	public boolean takeControl() {
 		return payload != null;
 	}
 
 	@Override
-	public void action() {
-		System.out.println(payload);
-	}
-
-	@Override
 	public void suppress() {
+		super.suppress();
 		payload = null;
 	}
 
 	public void dothejob(String payload) {
 		this.payload = payload;
+	}
+
+	@Override
+	protected int getControlValue() {
+		return Integer.parseInt(payload);
 	}
 
 }

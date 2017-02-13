@@ -1,15 +1,14 @@
 package com.accenture.iot.lego;
 
-import lejos.robotics.navigation.DifferentialPilot;
+import lejos.robotics.navigation.MovePilot;
 import lejos.robotics.subsumption.Behavior;
 
 public class BehaviorProximity implements Behavior {
 
-	private DifferentialPilot pilot = null;
+	private MovePilot pilot = null;
 	private SharedIRSensor ir = null;
-	private boolean backing_up = false;
 
-	public BehaviorProximity(DifferentialPilot pilot, SharedIRSensor ir) {
+	public BehaviorProximity(MovePilot pilot, SharedIRSensor ir) {
 		this.pilot = pilot;
 		this.ir = ir;
 	}
@@ -21,19 +20,13 @@ public class BehaviorProximity implements Behavior {
 
 	@Override
 	public void action() {
-
-		pilot.travel((double) -30);
+		pilot.travel((double) 30);
 		pilot.rotate(90);
-		
-		backing_up = false;
 
 	}
 
 	@Override
 	public void suppress() {
-		while (backing_up) {
-			Thread.yield();
-		}
 
 	}
 

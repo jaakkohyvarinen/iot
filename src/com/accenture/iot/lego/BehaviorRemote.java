@@ -1,18 +1,14 @@
 package com.accenture.iot.lego;
 
-import lejos.robotics.navigation.DifferentialPilot;
-import lejos.robotics.subsumption.Behavior;
+import lejos.robotics.navigation.MovePilot;
 
-public class BehaviorRemote implements Behavior {
+public class BehaviorRemote extends BehaviorControlBase {
 
 	private SharedIRSensor ir;
-	private DifferentialPilot pilot;
-	private int prev = 0;
-	private boolean manualcontrol = false;
 
-	public BehaviorRemote(SharedIRSensor ir, DifferentialPilot pilot) {
+	public BehaviorRemote(SharedIRSensor ir, MovePilot pilot) {
+		super (pilot);
 		this.ir = ir;
-		this.pilot = pilot;
 	}
 
 	@Override
@@ -21,42 +17,8 @@ public class BehaviorRemote implements Behavior {
 		
 	}
 
-	@Override
-	public void action() {
-		manualcontrol = true;
-		while (manualcontrol) {
-			int current = ir.getIRControlValue();
-			if (prev == current) {
-				continue;
-			}
-			pilot.stop();
-			prev = current;
-			switch (current) {
-			case 0:
-				pilot.stop();
-				manualcontrol = false;
-				break;
-			case 1:
-				pilot.rotateLeft();
-				continue;
-			case 2:
-				pilot.rotateRight();
-				continue;
-			case 3:
-				pilot.forward();
-				continue;
-			case 4:
-				pilot.backward();
-				continue;
-			}
-			
-		}
-	}
-
-	@Override
-	public void suppress() {
-		manualcontrol = false;
-		prev = 0;
+	protected int getControlValue () {
+		return ir.getIRControlValue();
 	}
 
 }

@@ -1,5 +1,8 @@
 package com.accenture.iot.lego;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.InvalidPathException;
@@ -22,6 +25,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -69,18 +73,23 @@ public class MqttHandler implements MqttCallback {
 		String payload = new String(mqttMessage.getPayload());
 		System.out.println(".messageArrived - Message received on topic " + topic + ": message is " + payload);
 		behavior.dothejob(payload);
+		System.out.println("R2D2 job done!");
 	}
 
-	public void connect(String serverHost, String clientId) {
+	public void connect(String serverHost, String clientId, KeyStore ks, String password, KeyStore caCerts) {
 		if (!isMqttConnected()) {
 			try {
-				client = new MqttClient("ssl://" + serverHost + ":8883", "EV3", new MemoryPersistence());
+				client = new MqttClient("ssl://" + serverHost + ":8883", "R2D2", new MemoryPersistence());
 				MqttConnectOptions options = new MqttConnectOptions();
-				options.setSocketFactory(
-						getSslSocketFactory("/cacerts",
-								"/7c9a87dcf7-certificate.pem.crt",
-								"/7c9a87dcf7-private.pem.key", "123456"));
+				SSLSocketFactory factory = null;
+				if (caCerts == null) {
+					factory = getSslSocketFactory(ks, password);
+				} else {
+					factory = getSslSocketFactory(ks, password, caCerts);
+				}
+				options.setSocketFactory(factory);
 				client.connect(options);
+				client.setCallback(this);
 				System.out.println("Connected to " + serverHost);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -193,38 +202,56 @@ public class MqttHandler implements MqttCallback {
 				connected = true;
 			}
 		} catch (Exception e) {
-			// swallowing the exception as it means the client is not connected :-)
+			// swallowing the exception as it means the client is not connected
+			// :-)
 		}
 		return connected;
 	}
 
-	public SSLSocketFactory getSslSocketFactory(final String caCrtFile, final String crtFile,
-			final String keyFile, final String password)
+	public SSLSocketFactory getSslSocketFactory(KeyStore ks, String password)
 			throws InvalidPathException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
 			UnrecoverableKeyException, KeyManagementException, Exception {
 
-		Security.addProvider(new BouncyCastleProvider());
+		KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+		kmf.init(ks, password.toCharArray());
+		SSLContext context = SSLContext.getInstance("TLSv1.2");
+		context.init(kmf.getKeyManagers(), null, null);
+		return context.getSocketFactory();
+	}
 
+	public SSLSocketFactory getSslSocketFactory(KeyStore ks, String password, KeyStore caCerts)
+			throws InvalidPathException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
+			UnrecoverableKeyException, KeyManagementException, Exception {
+
+		KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+		kmf.init(ks, password.toCharArray());
+
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init(caCerts);
+
+		SSLContext context = SSLContext.getInstance("TLSv1.2");
+		context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+		context.init(kmf.getKeyManagers(), null, null);
+		return context.getSocketFactory();
+	}
+
+	public void createKeyStore(final String path, final String crtFile, final String keyFile, final String password)
+			throws IOException, PEMException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
+			FileNotFoundException {
+		Security.addProvider(new BouncyCastleProvider());
+		System.out.println("BouncyCastleProvider added!");
 		// load client certificate
-		PEMParser parser = new PEMParser(
-				new InputStreamReader(getClass().getResourceAsStream(crtFile)));
+		PEMParser parser = new PEMParser(new InputStreamReader(getClass().getResourceAsStream(crtFile)));
 		X509CertificateHolder cert = (X509CertificateHolder) parser.readObject();
 		parser.close();
-
+		System.out.println("crtfile parsed " + crtFile);
 		// load client private key
 		parser = new PEMParser(new InputStreamReader(getClass().getResourceAsStream(keyFile)));
 		Object obj = parser.readObject();
+		parser.close();
 		KeyPair key = null;
 		JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
-
-		if (obj instanceof PEMEncryptedKeyPair) {
-			PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().build(password.toCharArray());
-			key = converter.getKeyPair(((PEMEncryptedKeyPair) obj).decryptKeyPair(decProv));
-		} else {
-			key = converter.getKeyPair((PEMKeyPair) obj);
-		}
-
-		parser.close();
+		key = converter.getKeyPair((PEMKeyPair) obj);
 		JcaX509CertificateConverter certConverter = new JcaX509CertificateConverter();
 		certConverter.setProvider("BC");
 
@@ -234,18 +261,7 @@ public class MqttHandler implements MqttCallback {
 		ks.setCertificateEntry("certificate", certConverter.getCertificate(cert));
 		ks.setKeyEntry("private-key", key.getPrivate(), password.toCharArray(),
 				new java.security.cert.Certificate[] { certConverter.getCertificate(cert) });
-		KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-		kmf.init(ks, password.toCharArray());
-		
-		// CA certificate is used to authenticate server
-		KeyStore caKs = KeyStore.getInstance(KeyStore.getDefaultType());
-		caKs.load(getClass().getResourceAsStream(caCrtFile), "changeit".toCharArray());		
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init(caKs);
-		
-		SSLContext context = SSLContext.getInstance("TLSv1.2");
-		context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-		return context.getSocketFactory();
+		ks.store(new FileOutputStream(new File(path)), "password".toCharArray());
 	}
 
 }
